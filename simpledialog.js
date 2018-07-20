@@ -1,3 +1,9 @@
+// (C) 2017 Alexander Shashkevich
+// Minimalistic dialog window using vanillajs framework
+// License: GPL-3.0
+
+'use strict';
+
 (function (w, d) {
     // helper to create dom elements
     const el = (e) => d.createElement(e);
