@@ -21,7 +21,8 @@
             close: true, // Show close button
             minmax: true, // Show min/max button
             minimized: false, // Create minimized dialog
-            parent: d.body // Parent element to host a dialog
+            parent: d.body, // Parent element to host a dialog
+            onclose: null
         };
 
         // UI elements
@@ -124,6 +125,7 @@
             ui.minmax = null;
             ui.title = null;
             ui.content = null;
+            if (ctx.onclose) ctx.onclose();
         };
 
         ui.title.addEventListener('mousedown', eventMouseDown);
