@@ -2,17 +2,16 @@
 // Minimalistic dialog window using vanillajs framework
 // License: GPL-3.0
 
-'use strict';
-
 (function (w, d) {
-    // helper to create dom elements
-    const el = (e) => d.createElement(e);
+    'use strict';
+    // Helper to create dom element with attributes
+    function el(name) {
+        const e = d.createElement(name);
+        if (arguments.length > 1) for (let attr in arguments[1]) if (e[attr] !== undefined) e[attr] = arguments[1][attr];
+        return e;
+    }
 
     w.SimpleDialog = function (c) {
-        // Context
-        let ctx = {};
-
-        // default config
         let cfg = {
             title: 'Dialog',
             content: 'Lorem ipsum dolor...',
@@ -25,7 +24,6 @@
             onclose: null
         };
 
-        // UI elements
         let ui = {
             dialog: null,
             title: null,
@@ -34,35 +32,25 @@
             close: null,
         };
 
-        // Dialog movemet
-        let mv = {
+        let xy = {
             mouseX: 0, mouseY: 0,
             dialogX: 0, dialogY: 0
         };
 
         // Merge config with default
-        for (let i in c)
-            cfg[i] = (typeof (c[i])) ? c[i] : cfg[i];
+        for (let i in c) cfg[i] = (typeof (c[i])) ? c[i] : cfg[i];
 
-        ui.dialog = el('div');
-        ui.title = el('div');
-        ui.minmax = el('span');
-        ui.close = el('span');
-        ui.content = el('div');
+        ui.dialog = el('div', {className: 'dlg-box'});
+        ui.title = el('div', {className: 'dlg-title'});
+        ui.minmax = el('span', {className: 'dlg-minmax', innerHTML: '&ndash;'});
+        ui.close = el('span', {className:'dlg-close', innerHTML: '&times;'});
+        ui.content = el('div', {className: 'dlg-content'});
 
         ui.dialog.appendChild(ui.close);
         ui.dialog.appendChild(ui.minmax);
         ui.dialog.appendChild(ui.title);
         ui.dialog.appendChild(ui.content);
         cfg.parent.appendChild(ui.dialog);
-
-        ui.dialog.className = 'dlg-box';
-        ui.minmax.className = 'dlg-minmax';
-        ui.minmax.innerHTML = '&ndash;';
-        ui.close.innerHTML = '&times;';
-        ui.close.className = 'dlg-close';
-        ui.title.className = 'dlg-title';
-        ui.content.className = 'dlg-content';
 
         ui.dialog.style.width = cfg.width + 'px';
         ui.dialog.style.minHeight = cfg.minimized ? '1px' : cfg.height + 'px';
@@ -90,11 +78,11 @@
 
         // Dragging...
         const eventMouseMove = (ev) => {
-            const dx = ev.clientX - mv.mouseX,
-                dy = ev.clientY - mv.mouseY;
+            const dx = ev.clientX - xy.mouseX,
+                dy = ev.clientY - xy.mouseY;
 
-            ui.dialog.style.left = mv.dialogX + dx + 'px';
-            ui.dialog.style.top = mv.dialogY + dy + 'px';
+            ui.dialog.style.left = xy.dialogX + dx + 'px';
+            ui.dialog.style.top = xy.dialogY + dy + 'px';
         };
 
         // End drag...
@@ -104,10 +92,10 @@
 
         // Start drag...
         const eventMouseDown = (ev) => {
-            mv.mouseX = ev.clientX;
-            mv.mouseY = ev.clientY;
-            mv.dialogX = ev.target.parentNode.offsetLeft;
-            mv.dialogY = ev.target.parentNode.offsetTop;
+            xy.mouseX = ev.clientX;
+            xy.mouseY = ev.clientY;
+            xy.dialogX = ev.target.parentNode.offsetLeft;
+            xy.dialogY = ev.target.parentNode.offsetTop;
 
             d.addEventListener('mousemove', eventMouseMove);
 
@@ -118,14 +106,13 @@
             return false;
         };
 
-        ctx.close = () => {
+        this.close = () => {
+            if (cfg.onclose) cfg.onclose();
+            // unref everything to free memory
             d.removeEventListener('mousemove', eventMouseMove);
-            d.body.removeChild(ui.dialog);
-            ui.dialog = null;
-            ui.minmax = null;
-            ui.title = null;
-            ui.content = null;
-            if (ctx.onclose) ctx.onclose();
+            cfg.parent.removeChild(ui.dialog);
+            ui = null;
+            cfg = null;
         };
 
         ui.title.addEventListener('mousedown', eventMouseDown);
@@ -137,8 +124,6 @@
             cfg.minimized = !cfg.minimized;
         };
 
-        ui.close.onclick = ctx.close;
-
-        return ctx;
+        ui.close.onclick = this.close;
     };
 })(window, document);
